@@ -6,8 +6,14 @@ require 'packs-specification'
 require 'parse_packwerk'
 require 'digest/md5'
 
-require 'visualize_packs/options'
-require 'visualize_packs/options_parser'
+module VisualizePacks; end
+
+if defined?(Rails)
+  require 'visualize_packs/engine'
+end
+
+require_relative 'visualize_packs/options'
+require_relative 'visualize_packs/options_parser'
 
 module VisualizePacks
   extend T::Sig
@@ -25,10 +31,8 @@ module VisualizePacks
     end
   end
 
-  sig { params(args: T::Array[String], raw_config: T::Hash[String, T.untyped], packages: T::Array[ParsePackwerk::Package]).returns(String) }
-  def self.package_graph!(args, raw_config, packages)
-    options = OptionsParser.parse(args)
-
+  sig { params(options: VisualizePacks::Options, raw_config: T::Hash[String, T.untyped], packages: T::Array[ParsePackwerk::Package]).returns(String) }
+  def self.package_graph!(options, raw_config, packages)
     all_packages = filtered(packages, options).compact.sort_by {|x| x.name }
     all_packages = remove_nested_packs(all_packages, options)
     all_package_names = all_packages.map &:name
@@ -38,7 +42,7 @@ module VisualizePacks
     node_protection = package_based_todos_text_maker()
     max_todo_count = max_todo_count(all_packages, show_edge, options)
 
-    title = diagram_title(args, options, max_todo_count)
+    title = diagram_title(options, max_todo_count)
 
     architecture_layers = (raw_config['architecture_layers'] || []) + ["NotInLayer"]
     grouped_packages = architecture_layers.inject({}) do |result, key|
@@ -71,18 +75,20 @@ module VisualizePacks
     package.config.dig("metadata", "owner") || package.config["owner"]
   end
 
-  sig { params(args: T::Array[String], options: Options, max_todo_count: T.nilable(Integer)).returns(String) }
-  def self.diagram_title(args, options, max_todo_count)
+  sig { params(options: VisualizePacks::Options, max_todo_count: T.nilable(Integer)).returns(String) }
+  def self.diagram_title(options, max_todo_count)
     return "<<b>#{options.title}</b>>" if options.title
 
     sub_title1_length = 0
-    options_to_display = args.inject('') do |result, item|
-      sub_title1_length += item.length
+    options_to_display = ""
+    options_to_display = VisualizePacks::Options.props.keys.inject('') do |result, prop_name|
+      item = options.send(prop_name)
+      sub_title1_length += prop_name.length + item.to_s.length
       if sub_title1_length > 90
         sub_title1_length = 0
-        result += "<br/>#{item}"
+        result += "<br/>#{prop_name}: #{item}"
       else
-        result += " #{item}"
+        result += " #{prop_name}: #{item}"
       end
       result
     end

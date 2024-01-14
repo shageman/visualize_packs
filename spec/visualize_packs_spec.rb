@@ -136,7 +136,7 @@ RSpec.describe "VisualizePacks" do
         ]
       end
 
-      options = Options.new
+      options = VisualizePacks::Options.new
       options.roll_nested_into_parent_packs = true
 
       result = VisualizePacks.remove_nested_packs([top_level_a, top_level_b, nested_a, nested_b], options)
@@ -258,7 +258,7 @@ RSpec.describe "VisualizePacks" do
         end
         x
       }
-      @options = Options.new
+      @options = VisualizePacks::Options.new
     end
 
     let(:show_edge) { VisualizePacks.show_edge_builder(@options, [@package.name, 'packs/b']) }
@@ -286,7 +286,7 @@ RSpec.describe "VisualizePacks" do
 
     it "does not include counts from todo types that are not being shown" do
       @options.show_relationship_todos = true
-      @options.relationship_todo_types = [EdgeTodoTypes::Privacy, EdgeTodoTypes::Architecture]
+      @options.relationship_todo_types = [VisualizePacks::EdgeTodoTypes::Privacy, VisualizePacks::EdgeTodoTypes::Architecture]
       @package = @package_with_todos.call({privacy: 3, dependency: 4, architecture: 2})
 
       expect(VisualizePacks.max_todo_count([@package], show_edge, @options)).to be 3
@@ -337,20 +337,20 @@ RSpec.describe "VisualizePacks" do
     }
     let(:edge_type_lookup) { 
       { 
-        'd' => EdgeTodoTypes::Dependency,
-        'p' => EdgeTodoTypes::Privacy,
-        'a' => EdgeTodoTypes::Architecture,
-        'v' => EdgeTodoTypes::Visibility,
-        'f' => EdgeTodoTypes::Folder_Visibility
+        'd' => VisualizePacks::EdgeTodoTypes::Dependency,
+        'p' => VisualizePacks::EdgeTodoTypes::Privacy,
+        'a' => VisualizePacks::EdgeTodoTypes::Architecture,
+        'v' => VisualizePacks::EdgeTodoTypes::Visibility,
+        'f' => VisualizePacks::EdgeTodoTypes::Folder_Visibility
       } 
     }
     let(:edge_mode_lookup) { 
       { 
-        'a' => FocusPackEdgeDirection::All, 
-        'i' => FocusPackEdgeDirection::In, 
-        'o' => FocusPackEdgeDirection::Out, 
-        'b' => FocusPackEdgeDirection::InOut, 
-        'n' => FocusPackEdgeDirection::None 
+        'a' => VisualizePacks::FocusPackEdgeDirection::All, 
+        'i' => VisualizePacks::FocusPackEdgeDirection::In, 
+        'o' => VisualizePacks::FocusPackEdgeDirection::Out, 
+        'b' => VisualizePacks::FocusPackEdgeDirection::InOut, 
+        'n' => VisualizePacks::FocusPackEdgeDirection::None 
       } 
     }
 
@@ -433,7 +433,7 @@ RSpec.describe "VisualizePacks" do
      ].each do |c|
       
       it "#{c[10]}" do
-        options = Options.new
+        options = VisualizePacks::Options.new
         options.focus_pack = c[7]
         options.exclude_packs = c[8]
         options.show_dependencies = c[1]
@@ -460,7 +460,7 @@ RSpec.describe "VisualizePacks" do
     subject {  VisualizePacks.show_edge_builder(@options, %w(a b c d)) }
 
     it 'returns a proc' do
-      @options = Options.new
+      @options = VisualizePacks::Options.new
       @package_names = []
 
       expect(subject).to be_a Proc
@@ -476,11 +476,11 @@ RSpec.describe "VisualizePacks" do
       [:out__, [true_, true_, true_, false, true_, true_, true_, false, false, false, false, false, false, false, false, false, false, false, false, false]],
       [:none_, [true_, false, false, false, true_, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false]],
     ].each do |edge_mode_line|
-      edge_mode = FocusPackEdgeDirection.deserialize(edge_mode_line[0].to_s.gsub('_', ''))
+      edge_mode = VisualizePacks::FocusPackEdgeDirection.deserialize(edge_mode_line[0].to_s.gsub('_', ''))
       expectations = edge_mode_line[1]
       (0..tests___.size-1).to_a.each do |index|
         it "returns #{expectations[index]} for mode #{edge_mode.serialize} with nodes a, b, c, d and focus nodes a, b for the edge #{tests___[index]}" do
-          @options = Options.new
+          @options = VisualizePacks::Options.new
           @options.show_only_edges_to_focus_pack = edge_mode
           @options.focus_pack = ['a', 'b']
 
@@ -495,27 +495,27 @@ RSpec.describe "VisualizePacks" do
   describe '.diagram_title' do
     context 'with a custom title from options' do
       it "returns whatever is set" do
-        options = Options.new
+        options = VisualizePacks::Options.new
         options.title = "Some title"
 
-        expect(VisualizePacks.diagram_title(["args"], options, 42)).to eq("<<b>Some title</b>>")
+        expect(VisualizePacks.diagram_title(options, 42)).to eq("<<b>Some title</b>>")
       end
     end
 
     context 'without a custom title from options' do
       describe 'with basic options and nil max edge count' do
         it "doesn't show todo info" do
-          options = Options.new
+          options = VisualizePacks::Options.new
 
-          expect(VisualizePacks.diagram_title(["args"], options, nil)).to eq("<<b>All packs</b><br/> args>")
+          expect(VisualizePacks.diagram_title(options, nil)).to eq("<<b>All packs</b><br/> args>")
         end
       end
 
       describe 'with basic options and 0 max edge count' do
         it "shows max as 0" do
-          options = Options.new
+          options = VisualizePacks::Options.new
 
-          expect(VisualizePacks.diagram_title(["args"], options, 0)).to eq(
+          expect(VisualizePacks.diagram_title(options, 0)).to eq(
             "<<b>All packs</b><br/> args<br/><font point-size='12'>Widest todo edge is 0 todo</font>>"
           )
         end
@@ -523,9 +523,9 @@ RSpec.describe "VisualizePacks" do
 
       describe 'with basic options and 1 max edge count' do
         it "shows max as 1" do
-          options = Options.new
+          options = VisualizePacks::Options.new
 
-          expect(VisualizePacks.diagram_title(["args"], options, 1)).to eq(
+          expect(VisualizePacks.diagram_title(options, 1)).to eq(
             "<<b>All packs</b><br/> args<br/><font point-size='12'>Widest todo edge is 1 todo</font>>"
           )
         end
@@ -533,9 +533,9 @@ RSpec.describe "VisualizePacks" do
 
       describe 'with basic options and non-zero max edge count' do
         it "shows appropriate max" do
-          options = Options.new
+          options = VisualizePacks::Options.new
 
-          expect(VisualizePacks.diagram_title(["args"], options, 19)).to eq(
+          expect(VisualizePacks.diagram_title(options, 19)).to eq(
             "<<b>All packs</b><br/> args<br/><font point-size='12'>Widest todo edge is 19 todos</font>>"
           )
         end
@@ -544,10 +544,9 @@ RSpec.describe "VisualizePacks" do
 
     describe "args subtitle" do
       it "is broken up if it is very very long" do
-        options = Options.new
+        options = VisualizePacks::Options.new
 
         diagram_title = VisualizePacks.diagram_title(
-          ['--title=Hide everything', '--no-node-todos', '--no-legend', '--no-layers', '--no-visibility', '--no-dependency-arrows', '--no-todo-edges', '--no-privacy-boxes', '--no-teams', '--no-nesting-arrows', '--remote-base-url=https://github.com/rubyatscale/visualize_packwerk/tree/main/spec/sample_app'], 
           options, 
           nil)
         expect(diagram_title).to eq(

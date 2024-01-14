@@ -3,12 +3,12 @@
 
 require "optparse"
 
-class OptionsParser
+class VisualizePacks::OptionsParser
   extend T::Sig
 
-  sig { params(args: T::Array[String]).returns(Options) }
+  sig { params(args: T::Array[String]).returns(VisualizePacks::Options) }
   def self.parse(args)
-    options = Options.new
+    options = VisualizePacks::Options.new
 
     OptionParser.new do |opt|
       opt.on('--no-legend', "Don't show legend") { |o| options.show_legend = false }
@@ -19,14 +19,14 @@ class OptionsParser
       opt.on('--no-visibility-arrows', "Don't show visibility arrows") { |o| options.show_visibility = false }
 
       opt.on('--no-todo-edges', "Don't show todos for package relationships") { |o| options.show_relationship_todos = false }
-      opt.on("--edge-todo-types=STRING", "Show only the selected types of relationship todos. Comma-separated list of #{EdgeTodoTypes.values.map &:serialize}") { |o| options.relationship_todo_types = o.to_s.split(",").uniq.map { EdgeTodoTypes.deserialize(_1) } }
-      opt.on("--use-edge-todos-for-layout", "Show only the selected types of relationship todos. Comma-separated list of #{EdgeTodoTypes.values.map &:serialize}") { |o| options.use_relationship_todos_for_layout = true }
+      opt.on("--edge-todo-types=STRING", "Show only the selected types of relationship todos. Comma-separated list of #{VisualizePacks::EdgeTodoTypes.values.map &:serialize}") { |o| options.relationship_todo_types = o.to_s.split(",").uniq.map { VisualizePacks::EdgeTodoTypes.deserialize(_1) } }
+      opt.on("--use-edge-todos-for-layout", "Use relationship todos for layout") { |o| options.use_relationship_todos_for_layout = true }
 
       opt.on('--no-teams', "Don't show team colors") { |o| options.show_teams = false }
       opt.on('--no-node-todos', "Don't show package-based todos") { |o| options.show_node_todos = false }
 
       opt.on('--focus-pack=STRING', "Focus on a specific pack(s). Comma-separated list of packs. Wildcards supported: 'packs/*'") { |o| options.focus_pack = o.to_s.split(",") }
-      opt.on('--focus-pack-edge-mode=STRING', "If focus-pack is set, this shows only between focussed packs (when set to none) or the edges into / out of / in and out of the focus packs to non-focus packs (which will be re-added to the graph). One of #{FocusPackEdgeDirection.values.map &:serialize}") { |o| options.show_only_edges_to_focus_pack = FocusPackEdgeDirection.deserialize(o) }
+      opt.on('--focus-pack-edge-mode=STRING', "If focus-pack is set, this shows only between focussed packs (when set to none) or the edges into / out of / in and out of the focus packs to non-focus packs (which will be re-added to the graph). One of #{VisualizePacks::FocusPackEdgeDirection.values.map &:serialize}") { |o| options.show_only_edges_to_focus_pack = VisualizePacks::FocusPackEdgeDirection.deserialize(o) }
       opt.on('--exclude-packs=', "Exclude listed packs from diagram. If used with include you will get all included that are not excluded. Wildcards support: 'packs/ignores/*'") { |o| options.exclude_packs = o.to_s.split(",") }
 
       opt.on('--roll-nested-into-parent-packs', "Don't show nested packs (not counting root). Connect edges to top-level pack instead") { |o| options.roll_nested_into_parent_packs = true }

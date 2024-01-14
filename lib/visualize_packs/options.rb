@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 # typed: strict
 
-class EdgeTodoTypes < T::Enum
+class VisualizePacks::EdgeTodoTypes < T::Enum
   enums do
     Dependency = new
     Privacy = new
@@ -11,7 +11,7 @@ class EdgeTodoTypes < T::Enum
   end
 end
 
-class FocusPackEdgeDirection < T::Enum
+class VisualizePacks::FocusPackEdgeDirection < T::Enum
   enums do
     None = new # don't include non-focus packs and thus show no edges to/from them
     All = new # include non-focus packs and show all edges between all visible nodes
@@ -21,7 +21,15 @@ class FocusPackEdgeDirection < T::Enum
   end
 end
 
-class Options < T::Struct
+class VisualizePacks::RelationshipTodoCountIndictor < T::Enum
+  enums do
+    Thickness = new
+    Number = new
+    ThicknessAndNumber = new
+  end
+end
+
+class VisualizePacks::Options < T::Struct
   extend T::Sig
 
   prop :show_legend, T::Boolean, default: true
@@ -32,14 +40,16 @@ class Options < T::Struct
   prop :show_visibility, T::Boolean, default: true
 
   prop :show_relationship_todos, T::Boolean, default: true
-  prop :relationship_todo_types, T::Array[EdgeTodoTypes], default: EdgeTodoTypes.values
+  prop :relationship_todo_types, T::Array[VisualizePacks::EdgeTodoTypes], default: VisualizePacks::EdgeTodoTypes.values
+  prop :collapse_relationship_todo_types, T::Boolean, default: true
+  prop :relationship_todo_count_indicator, VisualizePacks::RelationshipTodoCountIndictor, default: VisualizePacks::RelationshipTodoCountIndictor::Thickness
   prop :use_relationship_todos_for_layout, T::Boolean, default: false
 
   prop :show_teams, T::Boolean, default: true
   prop :show_node_todos, T::Boolean, default: true
 
   prop :focus_pack, T.nilable(T::Array[String]), default: nil
-  prop :show_only_edges_to_focus_pack, FocusPackEdgeDirection, default: FocusPackEdgeDirection::All
+  prop :show_only_edges_to_focus_pack, VisualizePacks::FocusPackEdgeDirection, default: VisualizePacks::FocusPackEdgeDirection::All
   prop :exclude_packs, T::Array[String], default: []
 
   prop :roll_nested_into_parent_packs, T::Boolean, default: false
